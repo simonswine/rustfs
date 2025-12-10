@@ -8,7 +8,7 @@ data:
   RUSTFS_OBS_LOG_DIRECTORY: {{ .Values.config.rustfs.obs_log_directory | quote }}
   RUSTFS_CONSOLE_ENABLE: {{ .Values.config.rustfs.console_enable | quote }}
   RUSTFS_OBS_LOGGER_LEVEL: {{ .Values.config.rustfs.log_level | quote }}
-  {{- if .Values.mode.distributed.enabled }}
+  {{- if and .Values.mode.distributed.enabled (or (gt (int .Values.replicaCount) 1) (gt (int .Values.volumesPerReplica) 1)) }}
   {{- $podIndex := "0" }}
   {{- if gt (int .Values.replicaCount) 1 }}
   {{- $podIndex = printf "{0...%d}" (sub (int .Values.replicaCount) 1) }}
