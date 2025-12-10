@@ -9,11 +9,15 @@ data:
   RUSTFS_CONSOLE_ENABLE: {{ .Values.config.rustfs.console_enable | quote }}
   RUSTFS_OBS_LOGGER_LEVEL: {{ .Values.config.rustfs.log_level | quote }}
   {{- if .Values.mode.distributed.enabled }}
-  {{- if gt (int .Values.volumesPerReplica) 1 }}
-  RUSTFS_VOLUMES: "http://{{ include "rustfs.fullname" . }}-{0...{{ sub (int .Values.replicaCount) 1 }}}.{{ include "rustfs.fullname" . }}-headless:9000/data/rustfs{0...{{ sub (int .Values.volumesPerReplica) 1 }}}"
-  {{- else }}
-  RUSTFS_VOLUMES: "http://{{ include "rustfs.fullname" . }}-{0...{{ sub (int .Values.replicaCount) 1 }}}.{{ include "rustfs.fullname" . }}-headless:9000/data"
+  {{- $podIndex := "0" }}
+  {{- if gt (int .Values.replicaCount) 1 }}
+  {{- $podIndex = printf "{0...%d}" (sub (int .Values.replicaCount) 1) }}
   {{- end }}
+  {{- $volumePath := "/data" }}
+  {{- if gt (int .Values.volumesPerReplica) 1 }}
+  {{- $volumePath = printf "/data/rustfs{0...%d}" (sub (int .Values.volumesPerReplica) 1) }}
+  {{- end }}
+  RUSTFS_VOLUMES: "http://{{ include "rustfs.fullname" . }}-{{ $podIndex }}.{{ include "rustfs.fullname" . }}-headless:9000{{ $volumePath }}"
   {{- else }}
   RUSTFS_VOLUMES: "/data"
   {{- end }}
